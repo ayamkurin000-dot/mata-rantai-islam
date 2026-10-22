@@ -56,9 +56,15 @@ function countLeafKisah(node){
   return c;
 }
 if(d.infoNote&&!M&&d.children&&d.children.length){
-  const b=document.createElement("div");b.className="dispute-flag info-flag love-flag";b.innerHTML="❤️";b.title="Klik untuk info ("+d.infoName||d.name+")";b.addEventListener("click",function(H){H.stopPropagation();openInfoNote(d.infoName||d.name,d.infoNote,!!(d.kisahNo||d.isDunia),!!d.isBiru)});e.appendChild(b);m.push(b);
+  const b=document.createElement("div");b.className="dispute-flag info-flag love-flag";b.innerHTML="❤️";b.title="Klik untuk info ("+(d.infoName||d.name)+")";b.addEventListener("click",function(H){H.stopPropagation();openInfoNote(d.infoName||d.name,d.infoNote,!!(d.kisahNo||d.isDunia),!!d.isBiru)});e.appendChild(b);m.push(b);
 }else if(!d.infoNote && d.children && d.children.length && countLeafKisah(d)>0){
-  const b=document.createElement("div");b.className="dispute-flag info-flag love-flag";b.innerHTML="❤️";b.title=countLeafKisah(d)+" kisah";e.appendChild(b);m.push(b);
+  // Kategori perantara Gus Miek: PERJALANAN HIDUP dll - belum ada infoNote, jadi love hanya penanda jumlah, tidak buka kartu kosong
+  const b=document.createElement("div");b.className="dispute-flag info-flag love-flag";b.innerHTML="❤️";b.title=countLeafKisah(d)+" kisah di dalam - klik untuk buka/tutup";b.addEventListener("click",function(H){
+    H.stopPropagation();
+    // Jangan buka infoNote kosong, cukup toggle expand/collapse kategori ini
+    const expandBtn = e.querySelector(".expand-badge");
+    if(expandBtn) expandBtn.click();
+  });e.appendChild(b);m.push(b);
 }else{
   m.push(null);
   if(d.infoNote&&(!d.children||!d.children.length)){
@@ -77,7 +83,6 @@ if(d.kisahNo||d.urutNo){const b=document.createElement("div");b.className="kisah
         t.urutNo=++n;
       });
     }
-    // Penomoran kisah - urut per parent, untuk tokoh maupun kategori perantara Gus Miek
     let k=0;
     e.children.forEach(function(n){
       if(n.titleLines) return;
