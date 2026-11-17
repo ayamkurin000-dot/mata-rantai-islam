@@ -1,0 +1,19 @@
+{
+  "name": "Mata Rantai Islam",
+  "short_name": "Mata Rantai",
+  "description": "Silsilah, sejarah, dan biografi ulama dari Nusantara hingga dunia Islam.",
+  "lang": "id",
+  "dir": "ltr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "id": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0a3426",
+  "theme_color": "#0a3426",
+  "icons": [
+    { "src": "logo/ikon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "logo/ikon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "logo/ikon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
