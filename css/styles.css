@@ -4,3 +4,5 @@
 .node-shape.ulama-green .real-body{stroke:#1e293b;stroke-width:.9;stroke-opacity:.18}
 .node-shape.ulama-green text,.node-shape.ulama-green tspan{fill:#000!important;filter:none!important}
 .node-shape.skin-pink text,.node-shape.skin-pink tspan{fill:#0f172a!important}
+
+#alquran-btn,.controls #alquran-btn{background:linear-gradient(#ffffff4d,#fff0 52%) padding-box,linear-gradient(#a82326,#6a0e11 55%,#3f0709) padding-box,linear-gradient(#ffc267,#e38a2a 40%,#a4540f 80%,#7a3a0a) border-box!important;background-origin:padding-box,padding-box,border-box!important;background-clip:padding-box,padding-box,border-box!important}
