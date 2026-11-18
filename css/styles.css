@@ -6,3 +6,7 @@
 .node-shape.skin-pink text,.node-shape.skin-pink tspan{fill:#0f172a!important}
 
 #alquran-btn,.controls #alquran-btn{background:linear-gradient(#ffffff4d,#fff0 52%) padding-box,linear-gradient(#a82326,#6a0e11 55%,#3f0709) padding-box,linear-gradient(#ffc267,#e38a2a 40%,#a4540f 80%,#7a3a0a) border-box!important;background-origin:padding-box,padding-box,border-box!important;background-clip:padding-box,padding-box,border-box!important}
+
+/* Semua kartu berbentuk kapsul */
+#tokoh-root-box,#tokoh-dunia-root-box{border-radius:999px!important}
+#tokoh-root-box:before,#tokoh-dunia-root-box:before{border-radius:999px!important;inset:5px 14px!important}
