@@ -182,8 +182,8 @@
     var B = '#tokoh-root-box,#tokoh-dunia-root-box';
     var gelap = terang(keadaan.m, pl.n);
     st.textContent =
-      B + '{background:' + [cssG('to right', stopsEdge(keadaan.m)), cssG('to bottom', SHADE), cssG('to right', stopsTone(keadaan.m, pl.n))].join(',') + '!important;border:none!important;border-radius:16px!important;box-shadow:0 2px 6px #0004!important}' +
-      B.split(',').map(function (x) { return x + ':before'; }).join(',') + '{inset:3px 9px!important;border-radius:12px!important;box-shadow:none!important;background:linear-gradient(#ffffff59,#ffffff00) top / 100% 46% no-repeat!important}' +
+      B + '{background:' + [cssG('to right', stopsEdge(keadaan.m)), cssG('to bottom', SHADE), cssG('to right', stopsTone(keadaan.m, pl.n))].join(',') + '!important;border:none!important;border-radius:9999px!important;box-shadow:0 2px 6px #0004!important}' +
+      B.split(',').map(function (x) { return x + ':before'; }).join(',') + '{inset:3px 9px!important;border-radius:9999px!important;box-shadow:none!important;background:linear-gradient(#ffffff59,#ffffff00) top / 100% 46% no-repeat!important}' +
       B.split(',').map(function (x) { return x + ' .tokoh-root-text'; }).join(',') + '{' +
       (gelap ? 'color:#0b1220!important;text-shadow:none!important;-webkit-text-stroke:2.6px #fff;paint-order:stroke fill' : 'color:#fff!important') + '}';
   }
