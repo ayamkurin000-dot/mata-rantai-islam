@@ -89,7 +89,9 @@
     var ov = g.querySelectorAll('.tm-ov');
     for (var i = 0; i < ov.length; i++) ov[i].remove();
     var rim = g.querySelector('path[data-tmk="rim"]');
-    if (rim) rim.setAttribute('fill', 'url(#btn-rim-g)');
+    if (rim) { rim.setAttribute('fill', 'url(#btn-rim-g)'); rim.setAttribute('stroke', '#0c2a0a'); }
+    var wl = g.querySelector('path[data-tmk="well"]');
+    if (wl) wl.removeAttribute('display');
     g.classList.remove('tm-terang');
     g.removeAttribute('data-tm');
   }
@@ -105,10 +107,12 @@
     if (!well) return;               /* kartu Wali-9 / lingkaran: dilewati */
     var lama = g.querySelectorAll('.tm-ov');
     for (var j = 0; j < lama.length; j++) lama[j].remove();
-    if (rim) rim.setAttribute('fill', 'url(#tm-rim-' + t.id + ')');
-
-    var d = well.getAttribute('d'), tr = well.getAttribute('transform');
-    var urut = ['tm-tone-', 'tm-shade', 'tm-seam-'], ref = well;
+    /* tanpa border: lapisan warna memakai bentuk luar kartu, bingkai & bagian dalam disembunyikan */
+    var dasar = rim || well;
+    if (rim) { rim.setAttribute('fill', 'none'); rim.setAttribute('stroke', 'none'); }
+    well.setAttribute('display', 'none');
+    var d = dasar.getAttribute('d'), tr = dasar.getAttribute('transform');
+    var urut = ['tm-tone-', 'tm-shade', 'tm-seam-'], ref = dasar;
     urut.forEach(function (pre) {
       var id = pre === 'tm-shade' ? 'tm-shade' : pre + t.id;
       var c = el('path', { d: d, fill: 'url(#' + id + ')', 'pointer-events': 'none', class: 'tm-ov' });
@@ -152,6 +156,7 @@
   var css = [
     '#tema-btn{padding:3px 8px!important;line-height:1;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto}',
     '#tema-btn svg{width:15px;height:15px;display:block}',
+    '.node-shape[data-tm] .body-stroke,.node-shape[data-tm] .real-body{stroke:none}',
     '.node-shape.tm-terang text{fill:#0b1220!important;filter:none!important;stroke:#fff;stroke-width:2.6px;paint-order:stroke fill;stroke-linejoin:round}',
     '#tema-overlay{position:fixed;inset:0;background:#0f172a8c;z-index:27000;display:none;align-items:center;justify-content:center;padding:16px}',
     '#tema-overlay.open{display:flex}',
@@ -182,9 +187,8 @@
       svg.appendChild(el('rect', { x: 1, y: 1, width: 70, height: 28, rx: 14, fill: 'url(#btn-rim-g)', stroke: '#0c2a0a', 'stroke-width': 1.5 }));
       svg.appendChild(el('rect', { x: 5, y: 5, width: 62, height: 20, rx: 10, fill: 'url(#btn-well-g)', stroke: '#061c08', 'stroke-width': 1 }));
     } else {
-      svg.appendChild(el('rect', { x: 1, y: 1, width: 70, height: 28, rx: 14, fill: 'url(#tm-rim-' + t.id + ')' }));
       ['tm-tone-' + t.id, 'tm-shade', 'tm-seam-' + t.id].forEach(function (id) {
-        svg.appendChild(el('rect', { x: 3, y: 3, width: 66, height: 24, rx: 12, fill: 'url(#' + id + ')' }));
+        svg.appendChild(el('rect', { x: 1, y: 1, width: 70, height: 28, rx: 14, fill: 'url(#' + id + ')' }));
       });
     }
     svg.appendChild(el('rect', { x: 10, y: 5.5, width: 52, height: 7, rx: 3.5, fill: '#ffffff', opacity: 0.38 }));
