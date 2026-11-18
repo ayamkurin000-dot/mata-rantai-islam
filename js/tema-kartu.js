@@ -1,4 +1,4 @@
-/* Pengaturan model kartu (kapsul 3D). Ikon palet di bawah tombol RESET -> kata sandi -> pilih model.
+/* Pengaturan model kartu (kapsul 3D). Warna terakhir pilihan pengguna langsung dipakai saat halaman dibuka (tanpa kedip tampilan lama). Ikon palet di bawah tombol RESET -> kata sandi -> pilih model.
    Model dipasang sebagai lapisan tambahan di atas kartu yang sudah digambar (app-1.js tidak diubah),
    dan otomatis dipasang lagi pada kartu baru saat cabang dibuka. Pilihan disimpan di perangkat. */
 (function () {
@@ -7,15 +7,16 @@
   var KUNCI = 'mri-tema-kartu';
   var NS = 'http://www.w3.org/2000/svg';
 
-  /* Palet: n = warna kartu biasa, w = warna kartu anggota Wali-9 (selalu beda dari n) */
+  /* Palet: n = warna kartu biasa, w = warna kartu anggota Wali-9 (selalu beda dari n),
+     t = warna kotak TOKOH ISLAM NUSANTARA & DUNIA (sama untuk keduanya, beda dari n dan w) */
   var PAL = [
-    { id: 'biru-merah',      n: ['#2b95dd', '#d32f2f'], w: ['#f2b01e', '#2e7d32'] },
-    { id: 'teal-merah',      n: ['#2f9fb0', '#d32f2f'], w: ['#f2b01e', '#7b3fa0'] },
-    { id: 'putih-merah',     n: ['#f3f1ee', '#d6392b'], w: ['#1e6fc8', '#f2b01e'] },
-    { id: 'putih-biru',      n: ['#f3f1ee', '#2b8fd6'], w: ['#d6392b', '#f2b01e'] },
-    { id: 'biru-muda-merah', n: ['#a9cde3', '#d32f2f'], w: ['#2e7d32', '#f2b01e'] },
-    { id: 'hijau-kuning',    n: ['#3aa84a', '#f2b01e'], w: ['#d32f2f', '#2b95dd'] },
-    { id: 'ungu-pink',       n: ['#8e44ad', '#ec5fa0'], w: ['#f2b01e', '#1e88e5'] }
+    { id: 'biru-merah',      n: ['#2b95dd', '#d32f2f'], w: ['#f2b01e', '#2e7d32'], t: ['#6a3fb5', '#f58220'] },
+    { id: 'teal-merah',      n: ['#2f9fb0', '#d32f2f'], w: ['#f2b01e', '#7b3fa0'], t: ['#f58220', '#2e7d32'] },
+    { id: 'putih-merah',     n: ['#f3f1ee', '#d6392b'], w: ['#1e6fc8', '#f2b01e'], t: ['#2e7d32', '#6a3fb5'] },
+    { id: 'putih-biru',      n: ['#f3f1ee', '#2b8fd6'], w: ['#d6392b', '#f2b01e'], t: ['#2e7d32', '#f58220'] },
+    { id: 'biru-muda-merah', n: ['#a9cde3', '#d32f2f'], w: ['#2e7d32', '#f2b01e'], t: ['#6a3fb5', '#f58220'] },
+    { id: 'hijau-kuning',    n: ['#3aa84a', '#f2b01e'], w: ['#d32f2f', '#2b95dd'], t: ['#6a3fb5', '#f58220'] },
+    { id: 'ungu-pink',       n: ['#8e44ad', '#ec5fa0'], w: ['#f2b01e', '#1e88e5'], t: ['#2e7d32', '#f58220'] }
   ];
   /* 1 warna | 2 warna | 1 warna gradasi | 2 warna gradasi */
   var MODE = ['solid', 'split', 'grad1', 'grad2'];
@@ -165,7 +166,8 @@
   }
   function tunda() {
     if (sibuk || jadwal) return;
-    jadwal = requestAnimationFrame(terapkan);
+    jadwal = 1;
+    Promise.resolve().then(terapkan);   /* microtask: jalan sebelum layar digambar */
   }
 
   /* kotak TOKOH ISLAM (HTML biasa) ikut tema dengan CSS */
@@ -180,10 +182,10 @@
     if (!pl) { if (st) st.remove(); return; }
     if (!st) { st = document.createElement('style'); st.id = 'tm-tokoh-css'; document.head.appendChild(st); }
     var B = '#tokoh-root-box,#tokoh-dunia-root-box';
-    var gelap = terang(keadaan.m, pl.n);
+    var gelap = terang(keadaan.m, pl.t);
     st.textContent =
-      B + '{background:' + [cssG('to right', stopsEdge(keadaan.m)), cssG('to bottom', SHADE), cssG('to right', stopsTone(keadaan.m, pl.n))].join(',') + '!important;border:none!important;border-radius:16px!important;box-shadow:0 2px 6px #0004!important}' +
-      B.split(',').map(function (x) { return x + ':before'; }).join(',') + '{inset:3px 9px!important;border-radius:12px!important;box-shadow:none!important;background:linear-gradient(#ffffff59,#ffffff00) top / 100% 46% no-repeat!important}' +
+      B + '{background:' + [cssG('to right', stopsEdge(keadaan.m)), cssG('to bottom', SHADE), cssG('to right', stopsTone(keadaan.m, pl.t))].join(',') + '!important;border:none!important;border-radius:999px!important;box-shadow:0 2px 6px #0004!important}' +
+      B.split(',').map(function (x) { return x + ':before'; }).join(',') + '{inset:3px 18px!important;border-radius:999px!important;box-shadow:none!important;background:linear-gradient(#ffffff59,#ffffff00) top / 100% 46% no-repeat!important}' +
       B.split(',').map(function (x) { return x + ' .tokoh-root-text'; }).join(',') + '{' +
       (gelap ? 'color:#0b1220!important;text-shadow:none!important;-webkit-text-stroke:2.6px #fff;paint-order:stroke fill' : 'color:#fff!important') + '}';
   }
@@ -249,16 +251,19 @@
     return svg;
   }
   function ikonPalet(pl) {
-    var svg = el('svg', { viewBox: '0 0 72 44', 'aria-hidden': 'true' }), ld = el('defs', {});
+    var svg = el('svg', { viewBox: '0 0 72 66', 'aria-hidden': 'true' }), ld = el('defs', {});
     svg.appendChild(ld);
     if (!pl) {
       svg.appendChild(el('rect', { x: 1, y: 1, width: 70, height: 19, rx: 9.5, fill: 'url(#btn-well-g)', stroke: '#0c2a0a', 'stroke-width': 1.2 }));
       svg.appendChild(el('rect', { x: 1, y: 24, width: 70, height: 19, rx: 9.5, fill: 'url(#btn-well)', stroke: '#2a0f04', 'stroke-width': 1.2 }));
+      svg.appendChild(el('rect', { x: 1, y: 47, width: 70, height: 19, rx: 9.5, fill: '#c62828', stroke: '#2a0f04', 'stroke-width': 1.2 }));
       svg.appendChild(el('rect', { x: 9, y: 4, width: 54, height: 5, rx: 2.5, fill: '#fff', opacity: 0.38 }));
       svg.appendChild(el('rect', { x: 9, y: 27, width: 54, height: 5, rx: 2.5, fill: '#fff', opacity: 0.38 }));
+      svg.appendChild(el('rect', { x: 9, y: 50, width: 54, height: 5, rx: 2.5, fill: '#fff', opacity: 0.38 }));
     } else {
       kapsul(svg, ld, 1, 19, keadaan.m, pl.n);
       kapsul(svg, ld, 24, 19, keadaan.m, pl.w);
+      kapsul(svg, ld, 47, 19, keadaan.m, pl.t);
     }
     return svg;
   }
@@ -351,7 +356,8 @@
       terapkan();
     }
     temaTokoh();
+    document.documentElement.removeAttribute('data-tm-tunggu');
   }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mulai);
-  else mulai();
+  /* skrip ada di akhir <body>: elemen sudah ada, jadi langsung dijalankan (tanpa menunggu DOMContentLoaded) */
+  try { mulai(); } catch (e) { document.documentElement.removeAttribute('data-tm-tunggu'); }
 })();
