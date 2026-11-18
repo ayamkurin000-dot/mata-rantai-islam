@@ -168,11 +168,32 @@
     jadwal = requestAnimationFrame(terapkan);
   }
 
+  /* kotak TOKOH ISLAM (HTML biasa) ikut tema dengan CSS */
+  function rgba(h, a) { var c = rgb(h); return 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a + ')'; }
+  function cssG(dir, st) {
+    return 'linear-gradient(' + dir + ',' + st.map(function (x) {
+      return rgba(x[1], x[2] == null ? 1 : x[2]) + ' ' + (x[0] * 100).toFixed(2) + '%';
+    }).join(',') + ')';
+  }
+  function temaTokoh() {
+    var st = document.getElementById('tm-tokoh-css'), pl = palet(keadaan.p);
+    if (!pl) { if (st) st.remove(); return; }
+    if (!st) { st = document.createElement('style'); st.id = 'tm-tokoh-css'; document.head.appendChild(st); }
+    var B = '#tokoh-root-box,#tokoh-dunia-root-box';
+    var gelap = terang(keadaan.m, pl.n);
+    st.textContent =
+      B + '{background:' + [cssG('to right', stopsEdge(keadaan.m)), cssG('to bottom', SHADE), cssG('to right', stopsTone(keadaan.m, pl.n))].join(',') + '!important;border:none!important;border-radius:16px!important;box-shadow:0 2px 6px #0004!important}' +
+      B.split(',').map(function (x) { return x + ':before'; }).join(',') + '{inset:3px 9px!important;border-radius:12px!important;box-shadow:none!important;background:linear-gradient(#ffffff59,#ffffff00) top / 100% 46% no-repeat!important}' +
+      B.split(',').map(function (x) { return x + ' .tokoh-root-text'; }).join(',') + '{' +
+      (gelap ? 'color:#0b1220!important;text-shadow:none!important;-webkit-text-stroke:2.6px #fff;paint-order:stroke fill' : 'color:#fff!important') + '}';
+  }
+
   function ubah(p, m) {
     if (p) keadaan.p = p;
     if (m) { keadaan.m = m; if (keadaan.p === 'asli') keadaan.p = PAL[0].id; }
     try { localStorage.setItem(KUNCI2, JSON.stringify(keadaan)); } catch (e) {}
     isiDefs();
+    temaTokoh();
     terapkan();
     gambarPanel();
   }
@@ -323,6 +344,7 @@
       pengamat.observe(wadah, { childList: true, subtree: true });
       terapkan();
     }
+    temaTokoh();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mulai);
   else mulai();
