@@ -7,121 +7,144 @@
   var KUNCI = 'mri-tema-kartu';
   var NS = 'http://www.w3.org/2000/svg';
 
-  /* L = warna separuh kiri, R = separuh kanan, s = posisi sambungan kapsul, t = true bila teks harus gelap */
-  var TEMA = [
-    { id: 'asli' },
-    { id: 'biru-merah',   L: '#2b95dd', R: '#d32f2f', s: 0.5,  t: false },
-    { id: 'teal-merah',   L: '#2f9fb0', R: '#d32f2f', s: 0.5,  t: false },
-    { id: 'putih-merah',  L: '#f3f1ee', R: '#d6392b', s: 0.48, t: true },
-    { id: 'putih-biru',   L: '#f3f1ee', R: '#2b8fd6', s: 0.48, t: true },
-    { id: 'biru-muda-merah', L: '#a9cde3', R: '#d32f2f', s: 0.5, t: true }
+  /* Palet: n = warna kartu biasa, w = warna kartu anggota Wali-9 (selalu beda dari n) */
+  var PAL = [
+    { id: 'biru-merah',      n: ['#2b95dd', '#d32f2f'], w: ['#f2b01e', '#2e7d32'] },
+    { id: 'teal-merah',      n: ['#2f9fb0', '#d32f2f'], w: ['#f2b01e', '#7b3fa0'] },
+    { id: 'putih-merah',     n: ['#f3f1ee', '#d6392b'], w: ['#1e6fc8', '#f2b01e'] },
+    { id: 'putih-biru',      n: ['#f3f1ee', '#2b8fd6'], w: ['#d6392b', '#f2b01e'] },
+    { id: 'biru-muda-merah', n: ['#a9cde3', '#d32f2f'], w: ['#2e7d32', '#f2b01e'] },
+    { id: 'hijau-kuning',    n: ['#3aa84a', '#f2b01e'], w: ['#d32f2f', '#2b95dd'] },
+    { id: 'ungu-pink',       n: ['#8e44ad', '#ec5fa0'], w: ['#f2b01e', '#1e88e5'] }
   ];
+  /* 1 warna | 2 warna | 1 warna gradasi | 2 warna gradasi */
+  var MODE = ['solid', 'split', 'grad1', 'grad2'];
 
   function el(n, a) {
     var e = document.createElementNS(NS, n);
     for (var k in a) e.setAttribute(k, a[k]);
     return e;
   }
+  function f(n) { return Math.max(0, Math.min(1, n)).toFixed(4); }
+  function rgb(h) { var n = parseInt(h.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
+  function hex(c) { return '#' + c.map(function (v) { v = Math.max(0, Math.min(255, Math.round(v))); return (v < 16 ? '0' : '') + v.toString(16); }).join(''); }
+  function campur(h, t, x) { var a = rgb(h), b = rgb(t); return hex([0, 1, 2].map(function (i) { return a[i] + (b[i] - a[i]) * x; })); }
+  function lum(h) { var c = rgb(h); return (0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]) / 255; }
+
   function grad(id, horiz, stops) {
     var g = el('linearGradient', { id: id, x1: 0, y1: 0, x2: horiz ? 1 : 0, y2: horiz ? 0 : 1 });
     stops.forEach(function (s) {
-      g.appendChild(el('stop', { offset: s[0], 'stop-color': s[1], 'stop-opacity': s[2] }));
+      g.appendChild(el('stop', { offset: f(s[0]), 'stop-color': s[1], 'stop-opacity': s[2] == null ? 1 : s[2] }));
     });
     return g;
   }
-  function f(n) { return Math.max(0, Math.min(1, n)).toFixed(4); }
+  function stopsTone(mode, c) {
+    var A = c[0], B = c[1], s = 0.5;
+    if (mode === 'solid') return [[0, A], [1, A]];
+    if (mode === 'split') return [[0, A], [s, A], [s, B], [1, B]];
+    if (mode === 'grad1') return [[0, campur(A, '#ffffff', 0.32)], [1, campur(A, '#000000', 0.22)]];
+    return [[0, A], [1, B]];
+  }
+  function warnaPakai(mode, c) {
+    return stopsTone(mode, c).map(function (x) { return x[1]; });
+  }
+  function terang(mode, c) {
+    return warnaPakai(mode, c).some(function (h) { return lum(h) > 0.6; });
+  }
+  /* ujung kapsul agak gelap (+ garis sambungan bila 2 warna) */
+  function stopsEdge(mode) {
+    var e0 = [[0, '#000000', 0.30], [0.06, '#000000', 0.06], [0.12, '#000000', 0]];
+    var e1 = [[0.88, '#000000', 0], [0.94, '#000000', 0.06], [1, '#000000', 0.30]];
+    if (mode !== 'split') return e0.concat(e1);
+    var s = 0.5;
+    return e0.concat([
+      [s - 0.14, '#000000', 0], [s - 0.012, '#000000', 0.10],
+      [s - 0.012, '#000000', 0.40], [s, '#000000', 0.40],
+      [s, '#ffffff', 0.55], [s + 0.008, '#ffffff', 0.55],
+      [s + 0.008, '#000000', 0.10], [s + 0.07, '#000000', 0]
+    ], e1);
+  }
+  var SHADE = [[0, '#ffffff', 0.34], [0.22, '#ffffff', 0.08], [0.5, '#000000', 0], [0.8, '#000000', 0.16], [1, '#000000', 0.42]];
 
-  /* ---------- gradien global ---------- */
+  /* ---------- keadaan ---------- */
+  var KUNCI2 = 'mri-tema-kartu-2';
+  var keadaan = { p: 'asli', m: 'split' };
+  try {
+    var simpan = localStorage.getItem(KUNCI2);
+    if (simpan) { var o = JSON.parse(simpan); if (o && o.p) keadaan = { p: o.p, m: o.m || 'split' }; }
+    else { var lama = localStorage.getItem(KUNCI); if (lama) keadaan = { p: lama, m: 'split' }; }
+  } catch (e) {}
+  function palet(id) { for (var i = 0; i < PAL.length; i++) if (PAL[i].id === id) return PAL[i]; return null; }
+  if (keadaan.p !== 'asli' && !palet(keadaan.p)) keadaan.p = 'asli';
+  if (MODE.indexOf(keadaan.m) < 0) keadaan.m = 'split';
+  function sig() { return keadaan.p + '|' + keadaan.m; }
+
+  /* ---------- gradien global (dibuat ulang tiap pilihan berubah) ---------- */
   var defs;
+  function isiDefs() {
+    while (defs.firstChild) defs.removeChild(defs.firstChild);
+    defs.appendChild(grad('tm-shade', false, SHADE));
+    var pl = palet(keadaan.p);
+    if (!pl) return;
+    ['n', 'w'].forEach(function (k) {
+      defs.appendChild(grad('tm-tone-' + k, true, stopsTone(keadaan.m, pl[k])));
+      defs.appendChild(grad('tm-edge-' + k, true, stopsEdge(keadaan.m)));
+    });
+  }
   function bangunDefs() {
     var svg = el('svg', { width: 0, height: 0, 'aria-hidden': 'true', focusable: 'false' });
     svg.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden;pointer-events:none';
     defs = el('defs', {});
     svg.appendChild(defs);
-
-    /* bayangan atas-bawah, sama untuk semua model */
-    defs.appendChild(grad('tm-shade', false, [
-      [0, '#ffffff', 0.34], [0.22, '#ffffff', 0.08], [0.5, '#000000', 0],
-      [0.8, '#000000', 0.16], [1, '#000000', 0.42]
-    ]));
-
-    TEMA.forEach(function (t) {
-      if (!t.L) return;
-      var s = t.s;
-      defs.appendChild(grad('tm-tone-' + t.id, true, [
-        [0, t.L, 1], [f(s), t.L, 1], [f(s), t.R, 1], [1, t.R, 1]
-      ]));
-      /* ujung kapsul agak gelap + garis sambungan */
-      defs.appendChild(grad('tm-seam-' + t.id, true, [
-        [0, '#000000', 0.30], [0.06, '#000000', 0.06], [0.12, '#000000', 0],
-        [f(s - 0.14), '#000000', 0],
-        [f(s - 0.012), '#000000', 0.10],
-        [f(s - 0.012), '#000000', 0.40], [f(s), '#000000', 0.40],
-        [f(s), '#ffffff', 0.55], [f(s + 0.008), '#ffffff', 0.55],
-        [f(s + 0.008), '#000000', 0.10],
-        [f(s + 0.07), '#000000', 0],
-        [0.88, '#000000', 0], [0.94, '#000000', 0.06], [1, '#000000', 0.30]
-      ]));
-      /* tepi luar (bingkai) lebih gelap */
-      function gelap(hex) {
-        var n = parseInt(hex.slice(1), 16);
-        var r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
-        return 'rgb(' + Math.round(r * 0.55) + ',' + Math.round(g * 0.55) + ',' + Math.round(b * 0.55) + ')';
-      }
-      defs.appendChild(grad('tm-rim-' + t.id, true, [
-        [0, gelap(t.L), 1], [f(s), gelap(t.L), 1], [f(s), gelap(t.R), 1], [1, gelap(t.R), 1]
-      ]));
-    });
     document.body.appendChild(svg);
+    isiDefs();
   }
 
   /* ---------- pasang / lepas pada kartu ---------- */
-  var aktif = 'asli';
-  try { aktif = localStorage.getItem(KUNCI) || 'asli'; } catch (e) {}
-  if (!TEMA.some(function (t) { return t.id === aktif; })) aktif = 'asli';
-
-  function cari(id) {
-    for (var i = 0; i < TEMA.length; i++) if (TEMA[i].id === id) return TEMA[i];
-    return TEMA[0];
-  }
-
   function lepas(g) {
     var ov = g.querySelectorAll('.tm-ov');
     for (var i = 0; i < ov.length; i++) ov[i].remove();
     var rim = g.querySelector('path[data-tmk="rim"]');
-    if (rim) { rim.setAttribute('fill', 'url(#btn-rim-g)'); rim.setAttribute('stroke', '#0c2a0a'); }
+    if (rim) { rim.setAttribute('fill', rim.getAttribute('data-tmf')); rim.setAttribute('stroke', rim.getAttribute('data-tms')); }
     var wl = g.querySelector('path[data-tmk="well"]');
     if (wl) wl.removeAttribute('display');
     g.classList.remove('tm-terang');
     g.removeAttribute('data-tm');
   }
 
-  function pasang(g, t) {
+  function pasang(g, pl) {
     var paths = g.querySelectorAll('path.aged-ov');
-    var rim = null, well = null;
+    var rim = null, well = null, wali = false;
     for (var i = 0; i < paths.length; i++) {
       var p = paths[i], fl = p.getAttribute('fill'), k = p.getAttribute('data-tmk');
-      if (k === 'rim' || fl === 'url(#btn-rim-g)') { rim = p; p.setAttribute('data-tmk', 'rim'); }
-      else if (k === 'well' || fl === 'url(#btn-well-g)') { well = p; p.setAttribute('data-tmk', 'well'); }
+      if (!k) {
+        if (fl === 'url(#btn-rim-g)' || fl === 'url(#btn-rim)') {
+          k = 'rim'; p.setAttribute('data-tmk', k); p.setAttribute('data-tmf', fl);
+          p.setAttribute('data-tms', p.getAttribute('stroke') || 'none');
+          if (fl === 'url(#btn-rim)') p.setAttribute('data-tmw', '1');
+        } else if (fl === 'url(#btn-well-g)' || fl === 'url(#btn-well)') {
+          k = 'well'; p.setAttribute('data-tmk', k);
+        }
+      }
+      if (k === 'rim') { rim = p; wali = p.getAttribute('data-tmw') === '1'; }
+      else if (k === 'well') { well = p; if (p.getAttribute('fill') === 'url(#btn-well)') wali = true; }
     }
-    if (!well) return;               /* kartu Wali-9 / lingkaran: dilewati */
+    if (!well) return;               /* lingkaran Nabi dan bentuk lain: dilewati */
     var lama = g.querySelectorAll('.tm-ov');
     for (var j = 0; j < lama.length; j++) lama[j].remove();
-    /* tanpa border: lapisan warna memakai bentuk luar kartu, bingkai & bagian dalam disembunyikan */
     var dasar = rim || well;
     if (rim) { rim.setAttribute('fill', 'none'); rim.setAttribute('stroke', 'none'); }
     well.setAttribute('display', 'none');
-    var d = dasar.getAttribute('d'), tr = dasar.getAttribute('transform');
-    var urut = ['tm-tone-', 'tm-shade', 'tm-seam-'], ref = dasar;
-    urut.forEach(function (pre) {
-      var id = pre === 'tm-shade' ? 'tm-shade' : pre + t.id;
+    var kk = wali ? 'w' : 'n';
+    var d = dasar.getAttribute('d'), tr = dasar.getAttribute('transform'), ref = dasar;
+    ['tm-tone-' + kk, 'tm-shade', 'tm-edge-' + kk].forEach(function (id) {
       var c = el('path', { d: d, fill: 'url(#' + id + ')', 'pointer-events': 'none', class: 'tm-ov' });
       if (tr) c.setAttribute('transform', tr);
       ref.parentNode.insertBefore(c, ref.nextSibling);
       ref = c;
     });
-    g.classList.toggle('tm-terang', !!t.t);
-    g.setAttribute('data-tm', t.id);
+    g.classList.toggle('tm-terang', terang(keadaan.m, pl[kk]));
+    g.setAttribute('data-tm', sig());
   }
 
   var sibuk = false, jadwal = 0, pengamat = null, wadah = null;
@@ -130,12 +153,12 @@
     if (!wadah) return;
     sibuk = true;
     if (pengamat) pengamat.disconnect();
-    var t = cari(aktif);
+    var pl = palet(keadaan.p), sg = sig();
     var semua = wadah.querySelectorAll('g.node-shape');
     for (var i = 0; i < semua.length; i++) {
       var g = semua[i];
-      if (t.id === 'asli') { if (g.getAttribute('data-tm')) lepas(g); }
-      else if (g.getAttribute('data-tm') !== t.id) pasang(g, t);
+      if (!pl) { if (g.getAttribute('data-tm')) lepas(g); }
+      else if (g.getAttribute('data-tm') !== sg) pasang(g, pl);
     }
     if (pengamat) pengamat.observe(wadah, { childList: true, subtree: true });
     sibuk = false;
@@ -145,11 +168,13 @@
     jadwal = requestAnimationFrame(terapkan);
   }
 
-  function pilih(id) {
-    aktif = id;
-    try { localStorage.setItem(KUNCI, id); } catch (e) {}
+  function ubah(p, m) {
+    if (p) keadaan.p = p;
+    if (m) { keadaan.m = m; if (keadaan.p === 'asli') keadaan.p = PAL[0].id; }
+    try { localStorage.setItem(KUNCI2, JSON.stringify(keadaan)); } catch (e) {}
+    isiDefs();
     terapkan();
-    tandai();
+    gambarPanel();
   }
 
   /* ---------- antarmuka ---------- */
@@ -158,10 +183,11 @@
     '#tema-btn svg{width:15px;height:15px;display:block}',
     '.node-shape[data-tm] .body-stroke,.node-shape[data-tm] .real-body{stroke:none}',
     '.node-shape.tm-terang text{fill:#0b1220!important;filter:none!important;stroke:#fff;stroke-width:2.6px;paint-order:stroke fill;stroke-linejoin:round}',
+    '.node-shape.tm-terang .wali9-badge text{fill:#dc2626!important;stroke:none}',
     '#tema-overlay{position:fixed;inset:0;background:#0f172a8c;z-index:27000;display:none;align-items:center;justify-content:center;padding:16px}',
     '#tema-overlay.open{display:flex}',
-    '#tema-card{position:relative;width:340px;max-width:94vw;background:linear-gradient(175deg,#fffdf7,#fbf3e1 55%,#f6ead0);border:4px double #a9873a;border-radius:14px;box-shadow:0 14px 34px #00000080;padding:22px 18px 20px;font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif}',
-    '#tema-close{position:absolute;top:8px;right:8px;width:34px;height:34px;border-radius:8px;border:1px solid #a9873a;background:#fff8;color:#3a2a06;font-weight:800;cursor:pointer;touch-action:manipulation}',
+    '#tema-card{position:relative;width:360px;max-width:94vw;max-height:94vh;overflow-y:auto;background:linear-gradient(175deg,#fffdf7,#fbf3e1 55%,#f6ead0);border:4px double #a9873a;border-radius:14px;box-shadow:0 14px 34px #00000080;padding:22px 16px 18px;font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif}',
+    '#tema-close{position:absolute;top:8px;right:8px;width:34px;height:34px;border-radius:8px;border:1px solid #a9873a;background:#fff8;color:#3a2a06;font-weight:800;cursor:pointer;touch-action:manipulation;z-index:2}',
     '#tema-pass{text-align:center}',
     '#tema-pass p{font-size:.8rem;font-weight:700;color:#3a2a06;margin:6px 0 12px}',
     '#tema-pass input{width:140px;text-align:center;font-size:1.3rem;letter-spacing:6px;padding:8px 10px;border:1.5px solid #a9873a;border-radius:8px;background:#fff;outline:none}',
@@ -170,33 +196,67 @@
     '#tema-pass .tm-ok{margin-top:6px;padding:7px 26px;border:none;border-radius:8px;font-weight:800;font-size:.8rem;color:#fff;cursor:pointer;background:linear-gradient(#3aa84a,#1b7a2c 55%,#0c4a18);box-shadow:0 0 0 1px #0c1f0a,0 2px 5px #0006;text-shadow:0 1px 0 #000a}',
     '#tema-pass.salah input{animation:tmGoyang .35s}',
     '@keyframes tmGoyang{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}',
-    '#tema-pilih{display:none;grid-template-columns:1fr 1fr;gap:12px;padding-top:10px}',
+    '#tema-pilih{display:none;padding-top:18px}',
     '#tema-card.terbuka #tema-pass{display:none}',
-    '#tema-card.terbuka #tema-pilih{display:grid}',
-    '.tm-sw{border:2px solid transparent;border-radius:14px;background:#ffffff80;padding:8px 4px;cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation}',
-    '.tm-sw svg{width:100%;max-width:120px;height:auto;display:block;filter:drop-shadow(0 3px 3px #0004)}',
+    '#tema-card.terbuka #tema-pilih{display:block}',
+    '#tema-mode{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}',
+    '#tema-pal{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}',
+    '#tema-pilih hr{border:none;height:2px;margin:14px 0;background:linear-gradient(90deg,transparent,#c9a227,transparent)}',
+    '.tm-sw{border:2px solid transparent;border-radius:12px;background:#ffffff80;padding:6px 3px;cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation}',
+    '.tm-sw svg{width:100%;height:auto;display:block;filter:drop-shadow(0 2px 2px #0004)}',
     '.tm-sw:hover{background:#fff}',
     '.tm-sw.pilih{border-color:#b8912f;background:#fff;box-shadow:0 0 0 2px #f4e4bc}'
   ].join('');
 
-  var overlay, kartu, input, galat, tombolSw = {};
+  var overlay, kartu, input, galat, gridMode, gridPal, nomor = 0;
 
-  function swatch(t) {
-    var svg = el('svg', { viewBox: '0 0 72 30', 'aria-hidden': 'true' });
-    if (!t.L) {
-      svg.appendChild(el('rect', { x: 1, y: 1, width: 70, height: 28, rx: 14, fill: 'url(#btn-rim-g)', stroke: '#0c2a0a', 'stroke-width': 1.5 }));
-      svg.appendChild(el('rect', { x: 5, y: 5, width: 62, height: 20, rx: 10, fill: 'url(#btn-well-g)', stroke: '#061c08', 'stroke-width': 1 }));
-    } else {
-      ['tm-tone-' + t.id, 'tm-shade', 'tm-seam-' + t.id].forEach(function (id) {
-        svg.appendChild(el('rect', { x: 1, y: 1, width: 70, height: 28, rx: 14, fill: 'url(#' + id + ')' }));
-      });
-    }
-    svg.appendChild(el('rect', { x: 10, y: 5.5, width: 52, height: 7, rx: 3.5, fill: '#ffffff', opacity: 0.38 }));
+  /* kapsul kecil untuk ikon; gradien dibuat di dalam svg-nya sendiri */
+  function kapsul(svg, ld, y, h, mode, c) {
+    var id = 'tmx' + (++nomor), rx = h / 2;
+    ld.appendChild(grad(id + 't', true, stopsTone(mode, c)));
+    ld.appendChild(grad(id + 'e', true, stopsEdge(mode)));
+    [id + 't', 'tm-shade', id + 'e'].forEach(function (u) {
+      svg.appendChild(el('rect', { x: 1, y: y, width: 70, height: h, rx: rx, fill: 'url(#' + u + ')' }));
+    });
+    svg.appendChild(el('rect', { x: h * 0.45, y: y + h * 0.16, width: 72 - h * 0.9 - 2, height: h * 0.26, rx: h * 0.13, fill: '#fff', opacity: 0.38 }));
+  }
+  function ikonMode(mode) {
+    var pl = palet(keadaan.p) || PAL[0];
+    var svg = el('svg', { viewBox: '0 0 72 30', 'aria-hidden': 'true' }), ld = el('defs', {});
+    svg.appendChild(ld);
+    kapsul(svg, ld, 1, 28, mode, pl.n);
     return svg;
   }
-
-  function tandai() {
-    for (var id in tombolSw) tombolSw[id].classList.toggle('pilih', id === aktif);
+  function ikonPalet(pl) {
+    var svg = el('svg', { viewBox: '0 0 72 44', 'aria-hidden': 'true' }), ld = el('defs', {});
+    svg.appendChild(ld);
+    if (!pl) {
+      svg.appendChild(el('rect', { x: 1, y: 1, width: 70, height: 19, rx: 9.5, fill: 'url(#btn-well-g)', stroke: '#0c2a0a', 'stroke-width': 1.2 }));
+      svg.appendChild(el('rect', { x: 1, y: 24, width: 70, height: 19, rx: 9.5, fill: 'url(#btn-well)', stroke: '#2a0f04', 'stroke-width': 1.2 }));
+      svg.appendChild(el('rect', { x: 9, y: 4, width: 54, height: 5, rx: 2.5, fill: '#fff', opacity: 0.38 }));
+      svg.appendChild(el('rect', { x: 9, y: 27, width: 54, height: 5, rx: 2.5, fill: '#fff', opacity: 0.38 }));
+    } else {
+      kapsul(svg, ld, 1, 19, keadaan.m, pl.n);
+      kapsul(svg, ld, 24, 19, keadaan.m, pl.w);
+    }
+    return svg;
+  }
+  function tombol(svg, aktifIni, aksi, label) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'tm-sw' + (aktifIni ? ' pilih' : ''); b.setAttribute('aria-label', label);
+    b.appendChild(svg); b.addEventListener('click', aksi);
+    return b;
+  }
+  function gambarPanel() {
+    if (!gridMode) return;
+    gridMode.innerHTML = ''; gridPal.innerHTML = '';
+    MODE.forEach(function (m) {
+      gridMode.appendChild(tombol(ikonMode(m), keadaan.p !== 'asli' && keadaan.m === m, function () { ubah(null, m); }, m));
+    });
+    gridPal.appendChild(tombol(ikonPalet(null), keadaan.p === 'asli', function () { ubah('asli', null); }, 'asli'));
+    PAL.forEach(function (pl) {
+      gridPal.appendChild(tombol(ikonPalet(pl), keadaan.p === pl.id, function () { ubah(pl.id, null); }, pl.id));
+    });
   }
 
   function buka() {
@@ -211,7 +271,7 @@
     if (input.value.trim() === KATA_SANDI) {
       kartu.classList.add('terbuka');
       input.value = ''; galat.textContent = '';
-      tandai();
+      gambarPanel();
     } else {
       galat.textContent = 'Kata sandi salah';
       var p = document.getElementById('tema-pass');
@@ -239,20 +299,13 @@
       '<div id="tema-pass"><p>Masukkan kata sandi</p>' +
       '<input type="password" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="off" id="tema-input">' +
       '<div class="tm-err"></div><button class="tm-ok" type="button">OK</button></div>' +
-      '<div id="tema-pilih"></div></div>';
+      '<div id="tema-pilih"><div id="tema-mode"></div><hr><div id="tema-pal"></div></div></div>';
     document.body.appendChild(overlay);
     kartu = overlay.querySelector('#tema-card');
     input = overlay.querySelector('#tema-input');
     galat = overlay.querySelector('.tm-err');
-
-    var grid = overlay.querySelector('#tema-pilih');
-    TEMA.forEach(function (t) {
-      var b = document.createElement('button');
-      b.type = 'button'; b.className = 'tm-sw'; b.setAttribute('aria-label', t.id);
-      b.appendChild(swatch(t));
-      b.addEventListener('click', function () { pilih(t.id); });
-      grid.appendChild(b); tombolSw[t.id] = b;
-    });
+    gridMode = overlay.querySelector('#tema-mode');
+    gridPal = overlay.querySelector('#tema-pal');
 
     overlay.addEventListener('click', function (e) { if (e.target === overlay) tutup(); });
     overlay.querySelector('#tema-close').addEventListener('click', tutup);
