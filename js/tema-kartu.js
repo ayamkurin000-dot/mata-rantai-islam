@@ -179,22 +179,13 @@
     var st = document.getElementById('tm-tokoh-css'), pl = palet(keadaan.p);
     if (!pl) { if (st) st.remove(); return; }
     if (!st) { st = document.createElement('style'); st.id = 'tm-tokoh-css'; document.head.appendChild(st); }
-
-    /* Kartu Tokoh Islam Nusantara dan Dunia tetap mengikuti tema aktif,
-       tetapi memakai kombinasi warna khusus agar tidak sama dengan kartu Wali Songo. */
-    var nus = [campur(pl.n[0], '#0f766e', 0.48), campur(pl.n[1], '#f97316', 0.42)];
-    var dunia = [campur(pl.n[0], '#6d28d9', 0.50), campur(pl.n[1], '#eab308', 0.38)];
-    var BN = '#tokoh-root-box', BD = '#tokoh-dunia-root-box';
-    var gelapN = terang(keadaan.m, nus), gelapD = terang(keadaan.m, dunia);
-
-    function boxRule(B, colors, gelap) {
-      return B + '{background:' + [cssG('to right', stopsEdge(keadaan.m)), cssG('to bottom', SHADE), cssG('to right', stopsTone(keadaan.m, colors))].join(',') + '!important;border:none!important;border-radius:9999px!important;box-shadow:0 3px 8px #0005!important}' +
-        B + ':before{inset:3px 9px!important;border-radius:9999px!important;box-shadow:none!important;background:linear-gradient(#ffffff59,#ffffff00) top / 100% 46% no-repeat!important}' +
-        B + ' .tokoh-root-text{' +
-        (gelap ? 'color:#0b1220!important;text-shadow:none!important;-webkit-text-stroke:2.6px #fff;paint-order:stroke fill' : 'color:#fff!important') + '}';
-    }
-
-    st.textContent = boxRule(BN, nus, gelapN) + boxRule(BD, dunia, gelapD);
+    var B = '#tokoh-root-box,#tokoh-dunia-root-box';
+    var gelap = terang(keadaan.m, pl.n);
+    st.textContent =
+      B + '{background:' + [cssG('to right', stopsEdge(keadaan.m)), cssG('to bottom', SHADE), cssG('to right', stopsTone(keadaan.m, pl.n))].join(',') + '!important;border:none!important;border-radius:16px!important;box-shadow:0 2px 6px #0004!important}' +
+      B.split(',').map(function (x) { return x + ':before'; }).join(',') + '{inset:3px 9px!important;border-radius:12px!important;box-shadow:none!important;background:linear-gradient(#ffffff59,#ffffff00) top / 100% 46% no-repeat!important}' +
+      B.split(',').map(function (x) { return x + ' .tokoh-root-text'; }).join(',') + '{' +
+      (gelap ? 'color:#0b1220!important;text-shadow:none!important;-webkit-text-stroke:2.6px #fff;paint-order:stroke fill' : 'color:#fff!important') + '}';
   }
 
   function ubah(p, m) {
@@ -238,7 +229,7 @@
     '.tm-sw.pilih{border-color:#b8912f;background:#fff;box-shadow:0 0 0 2px #f4e4bc}'
   ].join('');
 
-  var overlay, kartu, input, galat, gridMode, gridPal, nomor = 0;
+  var overlay, kartu, input, galat, gridMode, gridPal, nomor = 0, sudahLulusPassword = false;
 
   /* kapsul kecil untuk ikon; gradien dibuat di dalam svg-nya sendiri */
   function kapsul(svg, ld, y, h, mode, c) {
@@ -290,15 +281,21 @@
   }
 
   function buka() {
+    overlay.classList.add('open');
+    if (sudahLulusPassword) {
+      kartu.classList.add('terbuka');
+      gambarPanel();
+      return;
+    }
     kartu.classList.remove('terbuka');
     document.getElementById('tema-pass').classList.remove('salah');
     input.value = ''; galat.textContent = '';
-    overlay.classList.add('open');
     setTimeout(function () { input.focus(); }, 50);
   }
   function tutup() { overlay.classList.remove('open'); input.blur(); }
   function cek() {
     if (input.value.trim() === KATA_SANDI) {
+      sudahLulusPassword = true;
       kartu.classList.add('terbuka');
       input.value = ''; galat.textContent = '';
       gambarPanel();
