@@ -22,6 +22,10 @@ Website ini dirancang secara komprehensif untuk menjadi pusat referensi sejarah 
   * 4 Imam Mazhab (Ahlus Sunnah wal Jama'ah an-Nahdliyah).
   * Ulama Sains & Teknologi Islam, serta penyair/sastrawan dari berbagai era (Umayyah, Abbasiyah, Andalusia, Mamluk, hingga Utsmaniyah).
 
+* **Tema & Animasi (ikon palet, kata sandi):**
+  * Model/warna kartu, animasi latar (daun, salju, bintang berkerlip), warna latar.
+  * Aliran energi dari kartu Nabi Muhammad SAW (listrik, cahaya, air, api, nur) yang membuat kartu-kartu berikutnya bergetar dan menyala bergantian.
+
 ---
 
 ## 🛠️ Teknologi yang Digunakan

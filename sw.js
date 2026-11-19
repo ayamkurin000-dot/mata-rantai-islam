@@ -2,8 +2,8 @@
    Halaman (HTML/JSON/JS/CSS): jaringan dulu supaya selalu terbaru, cadangan dari cache bila offline.
    Gambar & font: cache dulu, diperbarui di latar belakang.
    Naikkan VERSI setiap ada perubahan agar cache lama dibuang. */
-var VERSI = 'mri-v10';
-var INTI = ['./', 'index.html', 'css/styles.css', 'js/app-1.js', 'js/app-2.js', 'js/tema-kartu.js', 'js/daun.js',
+var VERSI = 'mri-v11';
+var INTI = ['./', 'index.html', 'css/styles.css', 'js/app-1.js', 'js/app-2.js', 'js/tema-kartu.js', 'js/tema-animasi.js', 'js/animasi.js', 'js/energi.js',
             'manifest.webmanifest', 'logo/ikon-192.png', 'logo/ikon-512.png'];
 
 self.addEventListener('install', function (e) {

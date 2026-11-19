@@ -31,6 +31,8 @@
 <script>/* Bila pengguna pernah memilih tema kartu, sembunyikan peta sampai tema itu terpasang agar tampilan lama tidak sempat muncul. */
 try{var _t=JSON.parse(localStorage.getItem('mri-tema-kartu-2')||'null'),_l=localStorage.getItem('mri-tema-kartu');
 if(!((_t&&_t.p==='asli')||(!_t&&_l==='asli'))){var _h=document.documentElement;_h.setAttribute('data-tm-tunggu','1');setTimeout(function(){_h.removeAttribute('data-tm-tunggu')},2500)}}catch(e){}</script>
+<script>/* Bila pengguna memilih warna latar sendiri, pasang segera agar warna krem bawaan tidak sempat tampak. */
+try{var _a=JSON.parse(localStorage.getItem('mri-tema-anim')||'null');if(_a&&/^#[0-9a-f]{6}$/i.test(_a.latar)){var _s=document.createElement('style');_s.id='mri-latar-awal';_s.textContent='body{background-color:'+_a.latar+'}';document.head.appendChild(_s)}}catch(e){}</script>
 <style>html[data-tm-tunggu] #chart-container,html[data-tm-tunggu] #tokoh-root-box,html[data-tm-tunggu] #tokoh-dunia-root-box{visibility:hidden}</style>
 <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -314,7 +316,9 @@ if(!((_t&&_t.p==='asli')||(!_t&&_l==='asli'))){var _h=document.documentElement;_
 <script src="js/app-1.js"></script>
 <script src="js/app-2.js"></script>
 <script src="js/tema-kartu.js"></script>
-<script src="js/daun.js"></script>
+<script src="js/tema-animasi.js"></script>
+<script src="js/animasi.js"></script>
+<script src="js/energi.js"></script>
 <script>
 /* Pengingat memasang aplikasi (PWA): muncul SETIAP aplikasi dibuka selama belum terpasang (tidak ada jeda 7 hari lagi).
    "Nanti" hanya menutupnya untuk kunjungan ini; "Pasang" -> dialog pemasangan. Hilang sendiri setelah terpasang / dibuka dari layar utama.
