@@ -69,7 +69,7 @@
 
   /* ---------- keadaan ---------- */
   var KUNCI2 = 'mri-tema-kartu-2';
-  var keadaan = { p: 'asli', m: 'split' };
+  var keadaan = { p: 'putih-biru', m: 'grad1' };   /* bawaan: putih gradasi + kartu Wali-9 merah-kuning */
   try {
     var simpan = localStorage.getItem(KUNCI2);
     if (simpan) { var o = JSON.parse(simpan); if (o && o.p) keadaan = { p: o.p, m: o.m || 'split' }; }
