@@ -9,7 +9,7 @@
   'use strict';
   var KUNCI = 'mri-tema-anim';
   var ASLI = '#f8eeda';
-  var BAWAAN = { daun: true, salju: false, bintang: false, energi: 'listrik', kuat: 2, latar: 'asli' };
+  var BAWAAN = { daun: false, salju: true, bintang: true, energi: 'listrik', kuat: 3, latar: '#0a0a0f' };
 
   var ENERGI = [
     ['mati', '⛔', 'Mati'], ['listrik', '⚡', 'Listrik'], ['cahaya', '✨', 'Cahaya'], ['air', '💧', 'Air'],
